@@ -25,7 +25,9 @@ jobs:
                 "summary": "[${{ github.event.label.name }}] ${{ github.event.issue.title }}",
                 "source": "GitHub Issues - ${{ github.repository }}",
                 "severity": "critical",
-                "custom_details": {}
+                "custom_details": {
+                  "Labels": "${{ join(github.event.issue.labels.*.name, ', ') }}"
+                }
               },
               "links": [
                 {

@@ -1,26 +1,17 @@
-name: Querying Team PagerDuty Alert
+name: Querying On-call PagerDuty Alert
 
 on:
   issues:
     types:
       - labeled
-  # Remove these after testing:
-  workflow_dispatch:  # Allows manual triggering from Actions tab
-    inputs:
-      test_issue_number:
-        description: 'Issue number to simulate (for testing)'
-        required: false
-        default: '12345'
 
 jobs:
-  notify-querying-team:
+  notify-querying-on-call:
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    # Trigger when .Test or .Escalation label is added AND .Team/Querying is present
     if: |
-      github.event_name == 'workflow_dispatch' ||
-      ((github.event.label.name == '.Test' || github.event.label.name == '.Escalation') &&
-       contains(github.event.issue.labels.*.name, '.Team/Querying'))
+      (github.event.label.name == 'Priority: P1' || github.event.label.name == '.Escalation') &&
+      contains(github.event.issue.labels.*.name, '.Team/Querying')
     steps:
       - name: Trigger PagerDuty Incident
         run: |
@@ -31,15 +22,10 @@ jobs:
               "event_action": "trigger",
               "dedup_key": "github-issue-${{ github.event.issue.number }}",
               "payload": {
-                "summary": "[GitHub Issue #${{ github.event.issue.number }}] ${{ github.event.issue.title }}",
-                "source": "GitHub Issues - metabase/metabase",
+                "summary": "[${{ github.event.label.name }}] ${{ github.event.issue.title }}",
+                "source": "GitHub Issues - ${{ github.repository }}",
                 "severity": "critical",
-                "custom_details": {
-                  "issue_number": "${{ github.event.issue.number }}",
-                  "issue_author": "${{ github.event.issue.user.login }}",
-                  "trigger_label": "${{ github.event.label.name }}",
-                  "repository": "${{ github.repository }}"
-                }
+                "custom_details": {}
               },
               "links": [
                 {

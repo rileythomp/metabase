@@ -16,11 +16,11 @@ jobs:
   notify-querying-team:
     runs-on: ubuntu-22.04
     timeout-minutes: 5
-    # Trigger when both .Team/Querying AND .Test labels are present, OR when manually triggered
+    # Trigger when .Test or .Escalation label is added AND .Team/Querying is present
     if: |
       github.event_name == 'workflow_dispatch' ||
-      (contains(github.event.issue.labels.*.name, '.Team/Querying') &&
-       contains(github.event.issue.labels.*.name, '.Test'))
+      ((github.event.label.name == '.Test' || github.event.label.name == '.Escalation') &&
+       contains(github.event.issue.labels.*.name, '.Team/Querying'))
     steps:
       - name: Debug output
         run: |
@@ -42,4 +42,3 @@ jobs:
             echo ""
             echo "Label that triggered this workflow: ${{ github.event.label.name }}"
           fi
-
